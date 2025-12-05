@@ -32,33 +32,32 @@ SQLite	                                            Lightweight DB for storing ta
 Python (requests + FastAPI + gspread)	                  Automation + integrations
 
 
-🧩 Architecture & Flow
-+-------------------+             +-----------------------+
-|   Google Sheets   | <---------> |   sync.py (Python)    |
-|  (Lead Tracker)   |    API      | Two-way Sync Engine   |
-+-------------------+             +-----------+-----------+
-                                            |
-                                            | REST
-                                            v
-                                  +----------------------+
-                                  | FastAPI Work Tracker |
-                                  | (SQLite Task Store)  |
-                                  +----------------------+
+🧩 Architecture & Flow:
+
+
+<img width="512" height="297" alt="image" src="https://github.com/user-attachments/assets/e0c79228-57e4-412d-b4c5-54503fa37f21" />
+
 
 High-level Flow:
+
   1)Lead → Task:
+  
           *If a lead has no task_id → sync creates a Task in FastAPI.
           *Writes the task ID back into the Google Sheet.
           *Ensures idempotency.
 
   2)Task → Lead:
+  
           *If a task status is updated (todo → done) → sync updates lead status in the sheet.
 
 
 🏗️ Setup Instructions
   1️⃣ Google Sheets Setup:
+  
         *Create a new sheet with headers:
+        
             lead_id | name | email | status | task_id
+            
         *Fill a few sample rows.
         *Create a Google Cloud project
         *Enable:
@@ -85,93 +84,103 @@ Open docs:
 
 3️⃣ Configure Environment
 
-Place your service account key as:
-
-service_account.json
+Place your service account key as:   service_account.json
 
 
-Project includes a placeholder file:
-
-service_account.example.json
+Project includes a placeholder file:   service_account.example.json
 
 4️⃣ Running the Sync Engine
-python -m integrations.sync
+
+      python -m integrations.sync
 
 ▶️ Usage Guide (How to Test)
-1️⃣ Lead → Task (Create a lead → Task appears)
 
-Add a new row in Google Sheets:
+  1️⃣ Lead → Task (Create a lead → Task appears)
 
-3 | Charlie | charlie@example.com | new | 
+  Add a new row in Google Sheets:
 
-
-Run:
-
-python -m integrations.sync
+    3 | Charlie | charlie@example.com | new | 
 
 
-A corresponding task appears in FastAPI:
+  Run:
 
-GET /tasks
-
-
-The task_id column in the Sheet is updated automatically.
-
-2️⃣ Task → Lead (Update a task → Lead status updates)
-
-Open FastAPI docs → PUT /tasks/{task_id}
-
-Send:
-
-{
-  "status": "done"
-}
+    python -m integrations.sync
 
 
-Run:
+  A corresponding task appears in FastAPI:
 
-python -m integrations.sync
+    GET /tasks
 
 
-Google Sheet status changes to:
+  The task_id column in the Sheet is updated automatically.
 
-completed
+  2️⃣ Task → Lead (Update a task → Lead status updates)
+
+  Open FastAPI docs → PUT /tasks/{task_id}
+
+    Send:
+
+    {
+      "status": "done"
+    }
+
+
+  Run:
+
+    python -m integrations.sync
+
+
+  Google Sheet status changes to:    completed
 
 ⚙️ Error Handling
 
-The sync uses:
+  The sync uses:
 
-try:
-    r = requests.post(...)
-    r.raise_for_status()
-except requests.RequestException as e:
-    logger.error(...)
+    try:
+        r = requests.post(...)
+        r.raise_for_status()
+    except requests.RequestException as e:
+        logger.error(...)
 
 
 Covers:
 
-Invalid API calls
+  Invalid API calls
 
-Network issues
+  Network issues
 
-Incorrect credentials
+  Incorrect credentials
 
-Missing rows in the sheet
+  Missing rows in the sheet
 
-All errors are logged clearly.
+  All errors are logged clearly.
 
 🔁 Idempotency Strategy
 
-To avoid duplicate tasks:
+  To avoid duplicate tasks:
 
-Every Lead stores the task_id
+  Every Lead stores the task_id
 
-Sync logic:
+  Sync logic:
 
-if task_id exists:
-    update task ONLY
-else:
-    create new task
+    if task_id exists:
+        update task ONLY
+    else:
+        create new task
 
 
-Re-running the sync produces stable, repeatable, deterministic results.
+  Re-running the sync produces stable, repeatable, deterministic results.
+
+🤖 AI Usage Notes
+
+I used ChatGPT for:
+
+Architectural planning
+
+README formatting
+
+I used Claude for:
+
+Debug assistance
+
+code guided assitance
