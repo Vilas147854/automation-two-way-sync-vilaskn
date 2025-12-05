@@ -175,12 +175,12 @@ Covers:
 
 I used ChatGPT for:
 
-Architectural planning
+  Architectural planning
 
-README formatting
+  README formatting
 
 I used Claude for:
 
-Debug assistance
+  Debug assistance
 
-code guided assitance
+  code guided assitance
